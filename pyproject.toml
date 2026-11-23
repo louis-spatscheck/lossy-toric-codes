@@ -4,9 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lossytoric"
-version = "0.1.0"
-description = "Toric-code thresholds under bit-flip + erasure (photon-loss) noise"
+version = "0.2.0"
+description = "Toric-code thresholds under bit-flip + erasure (photon-loss) noise: MWPM and optimal (RBIM on the Nishimori line)"
 requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [{name = "Louis Spatscheck", email = "louisspatscheck@gmail.com"}]
 dependencies = ["numpy>=1.24", "scipy>=1.10", "pymatching>=2.2", "matplotlib>=3.7"]
 
 [project.optional-dependencies]

@@ -1,5 +1,7 @@
 # lossy-toric-codes
 
+[![tests](https://github.com/louis-spatscheck/lossy-toric-codes/actions/workflows/tests.yml/badge.svg)](https://github.com/louis-spatscheck/lossy-toric-codes/actions/workflows/tests.yml)
+
 Thresholds of the toric code under **bit-flip errors plus erasures** (heralded photon loss),
 computed in two independent ways:
 
@@ -9,9 +11,9 @@ computed in two independent ways:
 
 Thresholds are extracted by finite-size scaling (FSS).
 
-**Status: reproductions of known results.** Both curves agree with the literature within errors (see the
-tables). Nothing here is new. The point is a tested, validated pipeline that the next steps (qudit
-$\mathbb{Z}_d$ codes, see *Roadmap*) build on.
+**Status.** Every number below reproduces a published value within errors, for the matching decoder and
+for the optimal one. That makes it a tested baseline for the next step: qudit $\mathbb{Z}_d$ codes, where
+the loss/error trade-off is much less mapped out (see *Roadmap*).
 
 ![Optimal vs MWPM trade-off](figures/tradeoff_optimal_vs_mwpm.png)
 
@@ -32,8 +34,9 @@ on erased qubits and 1 elsewhere. System sizes are $L = 8, 12, 16, 24$, with $10
 | erasure only ($p=0$) | $e_c = 0.4989 \pm 0.0009 \pm 0.0013$ | 1/2 (bond percolation) [3] | $1.33 \pm 0.07$ (percolation: 4/3) |
 
 * **Validation.** Both endpoints agree with the literature. For erasure only, the fitted
-  exponent $\nu = 1.33 \pm 0.07$ also matches the exact 2D percolation value $4/3$. That is an
-  independent check: with erasures only, the decoder can only fail when the erased qubits contain a loop around the torus, which is bond percolation.
+  exponent $\nu = 1.33 \pm 0.07$ is consistent with the 2D percolation value $4/3$, but it depends on
+  the fit window (see *Limitations*), so treat it as a consistency check. The reason to expect
+  percolation: with erasures only, the decoder can only fail when the erased qubits contain a loop around the torus.
   The bit-flip value sits about 1.5σ (combined error) above 10.3%. The pairwise crossings
   of consecutive sizes range from 0.1024 to 0.1041, so the remaining offset is consistent with
   finite-size corrections at $L \le 24$.
@@ -91,6 +94,7 @@ so the systematic error is underestimated there.
 * **Agreement.** Every optimal value agrees with Ohzeki's duality estimates [10] within errors, and
   $e=0$ agrees with the high-precision Nishimori point $p_c = 0.10919(7)$ [13] at 0.5σ. Optimal lies
   above MWPM at every $e$, by about 0.003–0.006: MWPM is close to optimal for this code and noise.
+  Whether that stays true for qudits, where matching is no longer exact, is the first question for $\mathbb{Z}_3$.
 * **One detail at $e = 0.4$.** The duality estimate (0.0246) lies *below* the matching value (0.0256),
   which an optimal threshold cannot do; the duality method is an approximation, and [10] notes
   finite-size effects from lost qubits at large loss. Our Monte Carlo keeps the correct ordering
@@ -128,7 +132,11 @@ so the systematic error is underestimated there.
 4. **Diluted random 3-state Potts/clock model** → optimal loss/error trade-off for qutrits.
    Stay at $d \le 4$: for $d \ge 5$ the clean clock model has BKT transitions.
 5. *Optional:* $\mathbb{Z}_4$ vs $\mathbb{Z}_2\times\mathbb{Z}_2$ (same local dimension, different group):
-   a first look at group dependence, in the spirit of group surface codes / quantum doubles.
+   a first look at group dependence. Group surface codes, the quantum double models of finite groups,
+   give non-Clifford gates for the qubit surface code [14]; how much loss they tolerate is open territory
+   for this kind of pipeline.
+
+First steps towards item 3 (pure erasure for $d = 2, 3$, lattice and stubs) are in `wip/zd/`; not yet tested like `src/`.
 
 Prior work this builds on (so nothing gets reinvented): qubit loss + error thresholds [3,4];
 exact stat-mech mappings with erasure + computational errors for qubits [5]; qudit toric-code
@@ -144,7 +152,7 @@ Linux / macOS:
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install --no-cache-dir -e ".[test]"
-pytest                                            # 15 tests, < 2 s
+pytest                                            # 23 tests, ~15 s
 python scripts/analyze.py                         # refit included data, redraw figures
 ```
 
@@ -220,3 +228,12 @@ data/ results/ figures/
 11. H. Nishimori, *Internal energy, specific heat and correlation function of the bond-random Ising model*, Prog. Theor. Phys. 66, 1169 (1981).
 12. K. Hukushima, K. Nemoto, *Exchange Monte Carlo method and application to spin glass simulations*, J. Phys. Soc. Jpn. 65, 1604 (1996).
 13. M. Hasenbusch, F. Parisen Toldin, A. Pelissetto, E. Vicari, *Multicritical Nishimori point in the phase diagram of the ±J Ising model on a square lattice*, PRE 77, 051115 (2008).
+14. N. Manjunath, V. Mattei, A. Tiwari, T. D. Ellison, *Universal quantum computation with group surface codes*, arXiv:2603.05502 (2026).
+
+## How this was made
+
+The code and text in this repository were written with substantial help from an AI assistant (Claude).
+
+## Licence
+
+MIT. Questions or corrections are welcome: open an issue or email louisspatscheck@gmail.com.
