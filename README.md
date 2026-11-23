@@ -2,11 +2,11 @@
 
 [![tests](https://github.com/louis-spatscheck/lossy-toric-codes/actions/workflows/tests.yml/badge.svg)](https://github.com/louis-spatscheck/lossy-toric-codes/actions/workflows/tests.yml)
 
-Thresholds of the toric code under **bit-flip errors plus erasures** (heralded photon loss),
+Thresholds of the toric code under **bit-flip errors plus erasures**,
 computed in two independent ways:
 
-* **Phase 1, decoder:** what minimum-weight perfect matching (MWPM) achieves, by direct simulation.
-* **Phase 2a, optimal:** what any decoder could achieve at best, from the stat-mech mapping to the
+* **decoder:**minimum-weight perfect matching (MWPM).
+* **optimal:** stat-mech mapping to the
   random-bond Ising model (RBIM) on the Nishimori line, by Monte Carlo with parallel tempering.
 
 Thresholds are extracted by finite-size scaling (FSS).
@@ -19,9 +19,7 @@ the loss/error trade-off is much less mapped out (see *Roadmap*).
 
 ## Phase 1: MWPM thresholds
 
-Code-capacity noise on an $L\times L$ torus: each qubit is erased with probability $e$
-(and then fully depolarised, so it carries an X error with probability 1/2, at a known
-location). Each non-erased qubit gets an X error with probability $p$. MWPM uses edge weight 0
+Code-capacity noise on an $L\times L$ torus: each qubit is erased with probability $e$. Each non-erased qubit gets an X error with probability $p$. MWPM uses edge weight 0
 on erased qubits and 1 elsewhere. System sizes are $L = 8, 12, 16, 24$, with $10^4$–$4\times10^4$ shots per point.
 
 | noise | threshold (this work) | known value | FSS exponent $\nu$ |
@@ -49,19 +47,12 @@ on erased qubits and 1 elsewhere. System sizes are $L = 8, 12, 16, 24$, with $10
   finite-size corrections that the quadratic ansatz $P_L = A + Bx + Cx^2$,
   $x = (q-q_c)L^{1/\nu}$, ignores.
 
-![Crossings](figures/crossings.png)
-
-![Phase 1 trade-off](figures/tradeoff.png)
-
-### Limitations of Phase 1
+### Limitations
 
 * **Code capacity**: perfect syndrome measurements. No measurement errors and no circuit-level noise.
-* **MWPM is not optimal.** The optimal (maximum-likelihood) threshold is higher; Phase 2a computes it.
+* **MWPM is not optimal.** 
 * Independent X/Z noise, so one sector is simulated. A toric rather than a planar geometry.
-* The erasure-only fit uses a window of ±0.025 around a first-pass estimate. Over the full ±0.06 sweep
-  the quadratic ansatz fails (χ²/dof ≈ 37).
-* Erasure decoding rebuilds the matching graph every shot (1–5 ms/shot at these sizes). PyMatching
-  has no per-shot weight API. A union-find decoder would remove this cost.
+
 
 ## Phase 2a: optimal thresholds from the stat-mech mapping
 
@@ -143,58 +134,7 @@ exact stat-mech mappings with erasure + computational errors for qubits [5]; qud
 decoders and thresholds without erasure [6,7]; random-bond clock models for decohered
 $\mathbb{Z}_N$ toric codes [8].
 
-## Run it
 
-Needs Python ≥ 3.10 and about 300 MB of free disk for the virtual environment. No GPU.
-
-Linux / macOS:
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install --no-cache-dir -e ".[test]"
-pytest                                            # 23 tests, ~15 s
-python scripts/analyze.py                         # refit included data, redraw figures
-```
-
-Windows (cmd):
-
-```bat
-python -m venv .venv
-.venv\Scripts\activate
-pip install --no-cache-dir -e ".[test]"
-pytest
-```
-
-(PowerShell: `.venv\Scripts\Activate.ps1`.) `--no-cache-dir` avoids filling pip's download cache on small disks.
-
-Reproduce the data (about 15 min on 2 cores in total; erasure sweeps dominate):
-
-```bash
-L="8 12 16 24"
-python scripts/sweep.py --L $L --p 0.095 0.110 7 --e 0   --shots 40000 --out data/fine.csv
-python scripts/sweep.py --L $L --p 0.080 0.095 7 --e 0.1 --shots 10000 --out data/fine.csv
-python scripts/sweep.py --L $L --p 0.058 0.073 7 --e 0.2 --shots 10000 --out data/fine.csv
-python scripts/sweep.py --L $L --p 0.038 0.053 7 --e 0.3 --shots 10000 --out data/fine.csv
-python scripts/sweep.py --L $L --p 0.012 0.027 7 --e 0.4 --shots 10000 --out data/fine.csv
-python scripts/sweep.py --L $L --p 0 --e 0.44 0.56 7    --shots 10000 --out data/erasure_only.csv
-python scripts/analyze.py
-```
-
-Phase 2a (about 25 min for $e=0$ and 35 min for the four erasure rates, on 2 cores):
-
-```bash
-python scripts/rbim_eqcheck.py --L 16 --p 0.108 --e 0     # planted vs random start must agree
-python scripts/rbim_sweep.py --L 8 12 16 20 --p 0.102 0.117 6 --e 0 --samples 1000
-python scripts/rbim_sweep.py --L 8 12 16 --p 0.088 0.103 6 --e 0.1 --samples 1000   # etc. for e = 0.2-0.4
-python scripts/rbim_analyze.py
-```
-
-Per-sample results (one file per chunk of 250 disorder samples) are in `data/rbim/*.npz`, so
-`rbim_analyze.py` runs without re-simulating; fitted thresholds are in `results/rbim_thresholds.csv`.
-
-Rows are appended, so re-running with `--seed 1` adds statistics. Move the old CSVs away
-first for a clean reproduction. `data/coarse.csv` is the initial coarse scan used to place
-the fine windows.
 
 ## Layout
 
@@ -230,9 +170,16 @@ data/ results/ figures/
 13. M. Hasenbusch, F. Parisen Toldin, A. Pelissetto, E. Vicari, *Multicritical Nishimori point in the phase diagram of the ±J Ising model on a square lattice*, PRE 77, 051115 (2008).
 14. N. Manjunath, V. Mattei, A. Tiwari, T. D. Ellison, *Universal quantum computation with group surface codes*, arXiv:2603.05502 (2026).
 
-## How this was made
 
-The code and text in this repository were written with substantial help from an AI assistant (Claude).
+
+## Use of AI tools
+
+I wrote this repository with help from an AI coding assistant. I set the research
+questions, the methods and the order of the work. Claude wrote most of the code. I
+take full responsibility for everything here, including any errors.
+
+
+
 
 ## Licence
 
