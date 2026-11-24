@@ -112,9 +112,45 @@ so the systematic error is underestimated there.
 * The **planted start is not a free equilibration** for the magnetisation (a mistake in my first
   version): it is an exact equilibrium sample only for gauge-invariant observables such as the energy.
 
+## Phase 2b (started): faulty measurements, random-plaquette gauge model
+
+**Why.** Everything above assumes perfect syndrome measurements (`syn = syndrome(H, x_err)` in
+`simulate.run`). With readout errors (rate $q$) the syndrome is measured for $T$ rounds, errors
+become chains in a 3D spacetime lattice (space edges: qubit flips; time edges: wrong readouts),
+and the decoder pairs *detection events*, i.e. changes between rounds.
+
+**Mapping** [1,2]. Equivalent error histories differ by elementary spacetime squares (a
+stabilizer in one round, or a flip and flip-back hidden by two wrong readouts). One Z2 variable
+per square lives on a link of the dual lattice; each error edge pierces one dual plaquette. The
+result is a Z2 lattice gauge theory with random plaquette signs (RPGM) on the Nishimori line.
+Qubit flips $p$ and erasures sit on **timelike** plaquettes, readout errors $q$ on **spacelike**
+ones. The local gauge symmetry kills local order parameters (Elitzur), so the code measures
+Polyakov loops. A logical error is a $Z_2$ vortex wrapping space; the optimal threshold is the
+confinement transition, $p_c \simeq 0.033$ at $p = q$, $e = 0$ [15].
+
+**Code.** `src/lossytoric/rpgm.py` (heat bath on links in 6 sublattices + parallel tempering,
+vectorised like `rbim.py`); erasure is fresh every round (a lost qubit is replaced); `scripts/rpgm_*`.
+
+**Validated so far.**
+* Exact enumeration on the $2^3$ box (gauge-fixed on a maximal tree: $2^{17}$ configurations), with
+  frustration, erasure and different space/time couplings: Monte Carlo = exact.
+* Nishimori energy identity on timelike and spacelike plaquettes, separately: over 36 checks the
+  z-scores have mean 0.02 and standard deviation 1.08.
+* Clean limit (`scripts/rpgm_clean_check.py`): $\xi_P/L$ crossings at $\beta = 0.782$ ($L$ = 4/6)
+  and 0.767 (6/8), approaching the exact 3D-Ising-dual value 0.7614.
+* Equilibration at $L = 8$, $p = 0.033$: planted and hot starts are 10σ apart after 150 sweeps,
+  1.5σ after 500, and agree (0.1σ) after 1500 with 14 temperatures.
+
+**Threshold: not measured yet.** A first sweep ($L$ = 4, 6, 8; 100 disorder samples per point,
+`figures/rpgm_crossings.png`) behaves as expected for $p \ge 0.036$ ($\xi_P/L$ falls with $L$), but
+below that the errors are too large to resolve a crossing; the fit (0.029 ± 0.002, $\chi^2$/dof 2.2)
+is not a result. It needs ≥ 400 samples per point and $L \ge 10$: a cluster job.
+
 ## Roadmap
 
 1. ~~Optimal qubit thresholds via the RBIM on the Nishimori line, with dilution~~ (done, Phase 2a).
+   * **Faulty measurements** (Phase 2b, started): reproduce $p_c \simeq 0.033$, then the loss/error
+     trade-off $p_c(e)$ with readout errors; then a 3D matching decoder for comparison.
 2. **Domain-wall free energy.** The optimal decoder's failure probability is set by ratios of
    partition functions with twisted boundary conditions, a free-energy-difference estimation
    problem (variance reduction, signal-to-noise). It gives a decoder-level observable directly
@@ -146,10 +182,13 @@ src/lossytoric/
   simulate.py   Monte Carlo of the logical failure rate (Wilson intervals)
   fss.py        finite-size-scaling fit, bootstrap errors, pairwise crossings
   rbim.py       random-bond Ising model on the Nishimori line: heat bath + parallel tempering, jackknife
+  rpgm.py       random-plaquette Z2 gauge model (faulty measurements): link heat bath + PT, Polyakov loops
 scripts/        sweep.py, analyze.py                      (Phase 1: MWPM)
                 rbim_sweep.py, rbim_eqcheck.py, rbim_analyze.py   (Phase 2a: stat-mech MC)
+                rpgm_sweep.py, rpgm_eqcheck.py, rpgm_analyze.py, rpgm_clean_check.py   (Phase 2b)
 tests/          lattice algebra, decoder sanity, erasure use, FSS fit on synthetic data,
-                RBIM vs exact enumeration, Nishimori identity, planted vs random start
+                RBIM vs exact enumeration, Nishimori identity, planted vs random start,
+                gauge model: gauge invariance, exact enumeration (gauge-fixed), Nishimori identity
 data/ results/ figures/
 ```
 
@@ -169,6 +208,7 @@ data/ results/ figures/
 12. K. Hukushima, K. Nemoto, *Exchange Monte Carlo method and application to spin glass simulations*, J. Phys. Soc. Jpn. 65, 1604 (1996).
 13. M. Hasenbusch, F. Parisen Toldin, A. Pelissetto, E. Vicari, *Multicritical Nishimori point in the phase diagram of the ±J Ising model on a square lattice*, PRE 77, 051115 (2008).
 14. N. Manjunath, V. Mattei, A. Tiwari, T. D. Ellison, *Universal quantum computation with group surface codes*, arXiv:2603.05502 (2026).
+15. T. Ohno, G. Arakawa, I. Ichinose, T. Matsui, *Phase structure of the random-plaquette Z2 gauge model: accuracy threshold for a toric quantum memory*, Nucl. Phys. B 697, 462 (2004), arXiv:quant-ph/0401101.
 
 
 
