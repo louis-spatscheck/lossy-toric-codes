@@ -189,6 +189,8 @@ scripts/        sweep.py, analyze.py                      (Phase 1: MWPM)
 tests/          lattice algebra, decoder sanity, erasure use, FSS fit on synthetic data,
                 RBIM vs exact enumeration, Nishimori identity, planted vs random start,
                 gauge model: gauge invariance, exact enumeration (gauge-fixed), Nishimori identity
+notebooks/      gauge_covariant_decoding.ipynb: interactive introduction to gauge-covariant neural decoding
+wip/            zd/ (qudit erasure), lcnn/ (gauge-covariant neural decoder, needs jax + optax)
 data/ results/ figures/
 ```
 
